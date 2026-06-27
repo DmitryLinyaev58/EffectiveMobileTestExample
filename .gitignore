@@ -1,0 +1,27 @@
+﻿# Confidense
+.env
+
+# Go binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Coverage output
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build/output dirs
+build/
+dist/
