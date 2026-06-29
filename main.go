@@ -4,12 +4,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
