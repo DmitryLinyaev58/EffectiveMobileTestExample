@@ -110,3 +110,5 @@ PS D:\Projects\EffectiveMobile\EffectiveMobileTestExample> docker compose exec d
  public | schema_migrations | table | postgres
  public | subscriptions     | table | postgres
 (2 rows)
+	//"github.com/DmitryLinyaev58/EffectiveMobileTestExample/config"
+	//"github.com/DmitryLinyaev58/EffectiveMobileTestExample/db"
