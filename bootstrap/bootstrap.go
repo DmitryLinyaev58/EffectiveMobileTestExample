@@ -16,16 +16,18 @@ import (
 
 var database *sql.DB
 
+// handleGetSubscriptionByID — получить подписку по ID
 // @Summary Получить подписку по ID
 // @Description Получить подробную информацию о подписке
 // @Tags subscriptions
 // @Accept json
 // @Produce json
 // @Param id path int true "ID подписки"
-// @Success 200 {object} db.Subscription
+// @Success 200 {object} models.Subscription
 // @Failure 404 {string} string "Подписка не найдена"
 // @Router /subscriptions/{id} [get]
 func handleGetSubscriptionByID(w http.ResponseWriter, r *http.Request) {
+	// Оставляем твой ручной парсинг пути — он рабочий
 	path := strings.TrimPrefix(r.URL.Path, "/subscriptions/")
 	if path == "" || strings.Contains(path, "/") {
 		http.Error(w, "Invalid URL format. Expected /subscriptions/{id}", http.StatusBadRequest)
@@ -56,6 +58,44 @@ func handleGetSubscriptionByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(sub)
 }
 
+// handleCreateSubscription — создать подписку
+// @Summary Создать подписку
+// @Description Создать новую подписку в системе
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param body body db.CreateSubscriptionRequest true "Данные подписки"
+// @Success 201 {object} db.Subscription
+// @Failure 400 {string} string "Ошибка валидации"
+// @Failure 500 {string} string "Ошибка сервера"
+// @Router /subscriptions [post]
+func handleCreateSubscription(w http.ResponseWriter, r *http.Request) {
+	var req db.CreateSubscriptionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Простая валидация
+	if req.ServiceName == "" {
+		http.Error(w, "service_name is required", http.StatusBadRequest)
+		return
+	}
+
+	repo := db.NewSubscriptionRepository(database)
+
+	sub, err := repo.Create(r.Context(), req.UserID, req.ServiceName, req.Price, req.StartDate, req.EndDate)
+	if err != nil {
+		log.Printf("❌ DB error on create: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(sub)
+}
+
 func Run() error {
 	cfg := config.Load()
 	log.Printf("📋 Конфигурация: host=%s, port=%s, db=%s", cfg.DBHost, cfg.Port, cfg.DBName)
@@ -68,7 +108,6 @@ func Run() error {
 
 	mux := http.NewServeMux()
 
-	// --- Главная страница ---
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("EffectiveMobile API is running"))
@@ -112,8 +151,9 @@ func Run() error {
 		http.ServeFile(w, r, "./docs/swagger.json")
 	})
 
-	// --- GET /subscriptions/{id} ---
 	mux.HandleFunc("/subscriptions/", handleGetSubscriptionByID)
+
+	mux.HandleFunc("/subscriptions", handleCreateSubscription)
 
 	addr := ":" + cfg.Port
 	log.Printf("🚀 Сервер запущен на порту :%s", addr)

@@ -1,4 +1,17 @@
 definitions:
+  db.CreateSubscriptionRequest:
+    properties:
+      end_date:
+        type: string
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
   db.Subscription:
     properties:
       created_at:
@@ -18,9 +31,59 @@ definitions:
       user_id:
         type: string
     type: object
+  models.Subscription:
+    properties:
+      createdAt:
+        type: string
+      endDate:
+        type: string
+      id:
+        format: int64
+        type: integer
+      price:
+        type: integer
+      serviceName:
+        type: string
+      startDate:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /subscriptions:
+    post:
+      consumes:
+      - application/json
+      description: Создать новую подписку в системе
+      parameters:
+      - description: Данные подписки
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/db.CreateSubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Subscription'
+        "400":
+          description: Ошибка валидации
+          schema:
+            type: string
+        "500":
+          description: Ошибка сервера
+          schema:
+            type: string
+      summary: Создать подписку
+      tags:
+      - subscriptions
   /subscriptions/{id}:
     get:
       consumes:
@@ -38,7 +101,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/db.Subscription'
+            $ref: '#/definitions/models.Subscription'
         "404":
           description: Подписка не найдена
           schema:

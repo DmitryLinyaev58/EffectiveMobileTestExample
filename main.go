@@ -14,5 +14,4 @@ func main() {
 	if err := bootstrap.Run(); err != nil {
 		log.Fatalf("❌ Критическая ошибка при запуске приложения: %v", err)
 	}
-
 }
